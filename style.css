@@ -1,0 +1,12 @@
+/* style.css - GLB Studio */
+:root{ --glass-bg: rgba(255,255,255,0.05); --glass-border: rgba(255,255,255,0.08); --accent1:#7c5cff; --accent2:#00e0ff; }
+html,body,#app{height:100%}
+body{ font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto; background: linear-gradient(180deg,#030313,#080812); color:#e6eef8; -webkit-font-smoothing:antialiased;}
+.glass{ background:var(--glass-bg); border:1px solid var(--glass-border); backdrop-filter: blur(10px); border-radius:12px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); padding:0.5rem; }
+.btn-neon{ background: linear-gradient(90deg,var(--accent1),var(--accent2)); padding:0.5rem 0.9rem; border-radius:10px; font-weight:700; color:white; box-shadow: 0 8px 40px rgba(124,92,255,0.12); border:none; cursor:pointer; }
+#viewer{ border-radius:10px; overflow:hidden; min-height:60vh; background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.6)); }
+.toast{ position:fixed; right:20px; bottom:20px; background:rgba(10,10,12,0.9); color:white; padding:10px 14px; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.6); opacity:0; transform:translateY(12px); transition:all .28s ease; z-index:9999; }
+.toast.show{ opacity:1; transform:translateY(0); }
+.controls-row > *{ margin-right:8px; }
+.micro{ font-size:12px; opacity:0.85 }
+@media (max-width:1024px){ #viewer{ min-height:44vh } }

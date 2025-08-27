@@ -1,11 +1,17 @@
-# GLB Studio — HDRI Ready (Fully Wired)
+# GLB Studio — ZIP (3-file structure)
 
-This version includes working UI, toasts, and an HDRI loader (uses RGBELoader). Buttons and features are fully wired:
-- Upload (drag & drop + choose)
-- Auto-rotate, Grid, Wireframe, Reset view
-- Screenshot & Export GLB
-- HDRI environment (loads from Poly Haven)
-- Shadows toggle, Model info, Toast notifications
-- Vercel-ready static site
+Files:
+- index.html
+- style.css
+- script.js
+- vercel.json
 
-Note: HDRI loads from an external URL at runtime — ensure the browser has internet access.
+Quick start (local server):
+1. Unzip.
+2. Run: `python -m http.server 8000` or `npx serve .`
+3. Open http://localhost:8000/ and upload a .glb or .gltf file.
+
+Notes:
+- For .gltf files that reference external .bin or textures, serve the folder (don't open file://).
+- HDRI uses an external URL; if offline HDRI load will fail but model loading still works.
+- Deploy to Vercel by pushing repo and connecting to Vercel (static site).
