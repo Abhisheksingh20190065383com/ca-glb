@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GLB Studio — Premium Viewer</title>
+  <meta name="description" content="Premium GLB/GLTF viewer with glassmorphism UI, animated gradient, particles, and advanced tools." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --glass-bg: rgba(255,255,255,0.06);
+      --glass-border: rgba(255,255,255,0.08);
+      --accent1: #7c5cff;
+      --accent2: #00e0ff;
+      --accent3: #ff6b6b;
+      --card-blur: 12px;
+      --glass-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      --glass-glow: 0 0 30px rgba(124,92,255,0.18);
+    }
+    html,body,#app{height:100%}
+    body{
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.12), transparent),
+                  radial-gradient(800px 400px at 90% 90%, rgba(0,224,255,0.08), transparent),
+                  linear-gradient(180deg, #030313 0%, #080812 100%);
+      color: #e6eef8;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* animated gradient subtle */
+    .bg-gradient-anim{
+      background: linear-gradient(90deg, rgba(124,92,255,0.12), rgba(0,224,255,0.06), rgba(255,107,107,0.04));
+      background-size: 300% 300%;
+      animation: gradientShift 10s ease infinite;
+    }
+    @keyframes gradientShift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    /* glass card */
+    .glass{
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--card-blur));
+      box-shadow: var(--glass-shadow);
+      border-radius: 16px;
+    }
+
+    /* neon button */
+    .btn-neon{
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      padding: 0.5rem 0.9rem;
+      border-radius: 12px;
+      font-weight:600;
+      box-shadow: var(--glass-glow);
+      transition: transform .14s ease, box-shadow .14s ease, opacity .12s ease;
+    }
+    .btn-neon:hover{ transform: translateY(-3px); opacity: .98; }
+
+    /* uploader card tilt */
+    .tilt { transform-style: preserve-3d; transition: transform .18s cubic-bezier(.2,.9,.3,1); }
+    .tilt:hover { transform: perspective(900px) rotateX(4deg) rotateY(-6deg) translateY(-6px); }
+
+    /* viewer style */
+    #viewer{ border-radius:12px; overflow:hidden; min-height:56vh; background:linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.6)); }
+
+    /* icon style */
+    .icon { width:18px; height:18px; display:inline-block; vertical-align:middle; margin-right:8px; opacity:.95 }
+
+    /* small helpers */
+    .micro { font-size:12px; opacity:.8 }
+    .muted { opacity:.7 }
+    .controls-row > * { margin-right:8px; }
+
+    /* responsive tweaks */
+    @media (max-width:1024px){ #viewer{ min-height:44vh } }
+  </style>
+
+  <!-- THREE.js + Extras -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152/examples/js/exporters/GLTFExporter.js"></script>
+  <!-- particles (tsparticles) -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@3/tsparticles.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@3/tsparticles.bundle.min.js"></script>
+</head>
+<body>
+  <div id="app" class="min-h-screen flex flex-col">
+    <header class="max-w-7xl mx-auto w-full px-6 pt-8 pb-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl glass flex items-center justify-center" style="border:1px solid rgba(255,255,255,0.06)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#00e0ff"/></linearGradient></defs></svg>
+        </div>
+        <div>
+          <div class="text-xl font-extrabold tracking-tight">GLB Studio</div>
+          <div class="micro muted">Premium GLB/GLTF Viewer</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="uploadSmall" class="btn-neon text-sm">Upload Model</button>
+        <button id="themeToggle" class="glass px-3 py-2 micro">Toggle Theme</button>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full px-6 pb-10">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Viewer -->
+        <section class="lg:col-span-2 space-y-4">
+          <div class="glass p-4 tilt">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="text-sm font-semibold">Preview</div>
+                <div class="micro muted">Drag & drop .glb / .gltf</div>
+              </div>
+              <div class="micro muted">Drag • Upload • Screenshot • Export</div>
+            </div>
+            <div id="viewer" class="rounded-lg" ></div>
+            <div class="flex items-center justify-between mt-3">
+              <div class="controls-row micro muted">
+                <button id="resetView" class="glass px-3 py-2 micro">Reset</button>
+                <button id="autoRotate" class="glass px-3 py-2 micro">Auto Rotate: Off</button>
+                <button id="gridToggle" class="glass px-3 py-2 micro">Grid: On</button>
+                <button id="wireToggle" class="glass px-3 py-2 micro">Wire: Off</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="screenshot" class="btn-neon micro">📸 Screenshot</button>
+                <button id="exportBtn" class="glass px-3 py-2 micro">⇪ Export GLB</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right: Controls / Info -->
+        <aside class="space-y-4">
+          <div class="glass p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold">Upload</div>
+              <div class="micro muted">.glb .gltf .draco</div>
+            </div>
+            <div class="mt-3">
+              <label id="dropArea" class="block w-full cursor-pointer glass p-3 rounded-lg tilt text-center">
+                <input id="fileInput" type="file" accept=".glb,.gltf,model/gltf+json,model/gltf-binary" hidden>
+                <div class="text-sm font-semibold">Drop model here or click to choose</div>
+                <div class="micro muted mt-2">Max: browser limits. DRACO compressed supported.</div>
+              </label>
+            </div>
+            <div class="mt-3 flex gap-2">
+              <button id="chooseBtn" class="btn-neon flex-1">Choose File</button>
+              <button id="clearBtn" class="glass px-3 py-2 micro">Clear</button>
+            </div>
+          </div>
+
+          <div class="glass p-4">
+            <div class="text-sm font-semibold">Model Info</div>
+            <div id="modelInfo" class="mt-2 micro muted">No model loaded</div>
+          </div>
+
+          <div class="glass p-4">
+            <div class="text-sm font-semibold">Lighting</div>
+            <div class="mt-2 flex gap-2">
+              <button id="toggleShadows" class="glass px-3 py-2 micro">Shadows: On</button>
+              <button id="hdriBtn" class="glass px-3 py-2 micro">Env: Off</button>
+            </div>
+          </div>
+
+          <div class="text-xs muted micro">Made with Three.js • Deploy on Vercel • Premium UI</div>
+        </aside>
+      </div>
+    </main>
+
+    <div id="tsparticles"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
